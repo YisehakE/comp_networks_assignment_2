@@ -37,16 +37,38 @@ class IPv4Header:
         # I is for 4 bits
         # Q is for 8 bits
 
-        length, = struct.unpack('!H', hdr[2:4])
+        print("CODE:: packed length: ", str(hdr[2:4]))
+        length, = struct.unpack('!H', hdr[2:4]) # 16 bits -> 2 bytes
+        print("CODE:: unpack length: ", str(length))
 
-        ttl, = struct.unpack('!H', hdr[8:9])
-        protocol, = struct.unpack('!H', hdr[9:10])
+        print("CODE:: packed ttl: ", str(hdr[8:9]))
+        ttl, = struct.unpack('!B', hdr[8:9]) # 8 bits -> 1 byte
+        print("CODE:: unpacked ttl: ", str(ttl))
 
-        checksum, = struct.unpack('!H', hdr[10:12])
+        print("CODE:: packed protocol: ", str(hdr[9:10]))
+        protocol, = struct.unpack('!B', hdr[9:10]) # 8 bits -> 1 byte
+        print("CODE:: unpacked protocol: ", str(hdr[9:10]))
+
+
+        print("CODE:: packed checksum: ", str(hdr[10:12]))
+        checksum, = struct.unpack('!H', hdr[10:12]) # 16 bits -> 1 byte
+        print("CODE:: unpacked protocol: ", str(protocol))
 
         #TODO: need to convert src and dest to strings in "X.X.X.X" format
-        src, = struct.unpack('!Q', hdr[12:16])
-        dest, = struct.unpack('!Q', hdr[16:20])
+        print("CODE:: packed source: ", str(hdr[12:16]))
+        src, = struct.unpack('!4s', hdr[12:16])
+        print("CODE:: packed source (pre-conv): ", str(src))
+
+
+        src_str = bytes.fromhex(src.hex())
+        print("CODE:: src str", src_str)
+        
+        print("CODE:: packed dest: ", str(hdr[16:20]))
+        dest, = struct.unpack('!4s', hdr[16:20])
+        print("CODE:: unpacked dest: ",str(dest))
+
+        dest_str = bytes.fromhex(dest.hex())
+        print("CODE:: dest str", dest_str)
         
         return cls(length, ttl, protocol, checksum, src, dest)
     
@@ -116,16 +138,17 @@ class TCPHeader:
         # TODO: Flesh out for 1) Transport Layer Lab :: part 1 :: step 1
         # TODO: figure out how to break down the bytes according to TCP diagram and python struc unpacks
         
-        src, = struct.unpack('', hdr[])
-        dst, = struct.unpack('', hdr[])
-        seq, = struct.unpack('', hdr[])
+        # src, = struct.unpack('', hdr[])
+        # dst, = struct.unpack('', hdr[])
+        # seq, = struct.unpack('', hdr[])
 
-        ack, = struct.unpack('', hdr[])
-        flags, = struct.unpack('', hdr[])
-        checksum, = struct.unpack('', hdr[])
+        # ack, = struct.unpack('', hdr[])
+        # flags, = struct.unpack('', hdr[])
+        # checksum, = struct.unpack('', hdr[])
 
 
-        return cls(src, dst, seq, ack, flags, checksum)
+        # return cls(src, dst, seq, ack, flags, checksum)
+        pass
     
         # return cls(0, 0, 0, 0, 0, 0)
 
