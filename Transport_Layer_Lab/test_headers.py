@@ -9,29 +9,29 @@ from mysocket import TCP_FLAGS_SYN, TCP_FLAGS_ACK, \
 
 class TestHeaders(unittest.TestCase):
     def test_ipv4_header(self):
-        ip_hdr_bytes = b'E\x00\x02\x05\x00\x00\x00\x00\x80\x06\x00\x00\xc0\xa8\n\x14\xc0\xa8\x0f\x02'
+        # ip_hdr_bytes = b'E\x00\x02\x05\x00\x00\x00\x00\x80\x06\x00\x00\xc0\xa8\n\x14\xc0\xa8\x0f\x02'
 
-        hdr = IPv4Header.from_bytes(ip_hdr_bytes)
+        # hdr = IPv4Header.from_bytes(ip_hdr_bytes)
 
-        print(hdr)
+        # print(hdr)
 
-        actual_value = (hdr.length, hdr.ttl, hdr.protocol,
-                hdr.checksum, hdr.src, hdr.dst)
+        # actual_value = (hdr.length, hdr.ttl, hdr.protocol,
+        #         hdr.checksum, hdr.src, hdr.dst)
         
-        print("TEST:: HDR: ", str(hdr))
-        print("TEST:: actual: ", str(actual_value))
-        correct_value = (0, 0, 0, 0, '0.0.0.0', '0.0.0.0')
-
-        self.assertEqual(actual_value, correct_value)
-
-
-        # ip_hdr_obj = IPv4Header(1057, 64, 17, 0, '128.187.82.254', '128.170.51.63')
-
-
-        # actual_value = binascii.hexlify(ip_hdr_obj.to_bytes())
-        # correct_value = b''
+        # print("TEST:: HDR: ", str(hdr))
+        # print("TEST:: actual: ", str(actual_value))
+        # correct_value = (0, 0, 0, 0, '0.0.0.0', '0.0.0.0')
 
         # self.assertEqual(actual_value, correct_value)
+
+
+        ip_hdr_obj = IPv4Header(1057, 64, 17, 0, '128.187.82.254', '128.170.51.63')
+
+
+        actual_value = binascii.hexlify(ip_hdr_obj.to_bytes())
+        correct_value = b''
+
+        self.assertEqual(actual_value, correct_value)
 
 
     def test_udp_header(self):

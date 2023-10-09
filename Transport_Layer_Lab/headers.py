@@ -6,6 +6,10 @@ from cougarnet.util import \
         ip_str_to_binary, ip_binary_to_str
 
 
+from ipaddress import ip_address
+import binascii as bs
+
+
 IP_HEADER_LEN = 20
 UDP_HEADER_LEN = 8
 TCP_HEADER_LEN = 20
@@ -37,6 +41,8 @@ class IPv4Header:
         # I is for 4 bits
         # Q is for 8 bits
 
+        print("CODE:: length of hdr: ", len(hdr))
+
         print("CODE:: packed length: ", str(hdr[2:4]))
         length, = struct.unpack('!H', hdr[2:4]) # 16 bits -> 2 bytes
         print("CODE:: unpack length: ", str(length))
@@ -54,46 +60,51 @@ class IPv4Header:
         checksum, = struct.unpack('!H', hdr[10:12]) # 16 bits -> 1 byte
         print("CODE:: unpacked protocol: ", str(protocol))
 
+
         #TODO: need to convert src and dest to strings in "X.X.X.X" format
         print("CODE:: packed source: ", str(hdr[12:16]))
         src, = struct.unpack('!4s', hdr[12:16])
         print("CODE:: packed source (pre-conv): ", str(src))
-
-
-        src_str = bytes.fromhex(src.hex())
-        print("CODE:: src str", src_str)
         
+        src_str = str(ip_address(src))
+        print("CODE:: src ip str: ", src_str)
+
+
         print("CODE:: packed dest: ", str(hdr[16:20]))
-        dest, = struct.unpack('!4s', hdr[16:20])
-        print("CODE:: unpacked dest: ",str(dest))
+        dst, = struct.unpack('!4s', hdr[16:20])
+        print("CODE:: unpacked dest: ",str(dst))
 
-        dest_str = bytes.fromhex(dest.hex())
-        print("CODE:: dest str", dest_str)
+        dst_str = str(ip_address(dst))
+        print("CODE:: dst ip str: ", dst_str)
+
+
+
         
-        return cls(length, ttl, protocol, checksum, src, dest)
+        return cls(length, ttl, protocol, checksum, src_str, dst_str)
     
         # return cls(0, 0, 0, 0, '0.0.0.0', '0.0.0.0')
 
     def to_bytes(self) -> bytes:
-        # TODO: 
-
         hdr = b''
-        # TODO: pack 8 bits before "length" (4 bits for version, 4 bits for IHL, 8 bits for diff. service  = 16 total)
-        hdr += struct.pack('!H', 16)
 
-        hdr += struct.pack('!H', self.length)
+        # Pack 16 bits before "length" (4 bits for version, 4 bits for IHL, 8 bits for diff. service  = 16 total)
+        hdr += struct.pack('!H', 4)
+        hdr += struct.pack('!H', 5)
+        hdr += struct.pack('!H', 0)
+
+        hdr += struct.pack('!H', self.length) # 1. Pack 1st attribute in order -> length
 
         # TODO: pack 32 bits before "ttl" (16 bits for id, 3 bits for flags, 13 bits for fragment  = 32 total)
-        hdr += struct.pack('!H', 32)
-
-        hdr += struct.pack('!H', self.ttl)
-        hdr += struct.pack('!H', self.protocol)
-        hdr += struct.pack('!H', self.checksum)
-        hdr += struct.pack('!H', self.src)
-        hdr += struct.pack('!H', self.dst)
+        hdr += struct.pack('!H', 0)
+        hdr += struct.pack('!H', 0)
+ 
+        hdr += struct.pack('!B', self.ttl) # 2. Pack 2nd attribute in order -> ttl
+        hdr += struct.pack('!B', self.protocol) # 3. Pack 2nd attribute in order -> protocol
+        hdr += struct.pack('!H', self.checksum) # 4. Pack 2nd attribute in order -> checksum
+        hdr += struct.pack('!13s', bytes(self.src, "utf-8"))
+        hdr += struct.pack('!13s', bytes(self.dst, "utf-8"))
 
         # TODO: pack 32 bits before "ttl" (32 bits for options = 32 total)
-        hdr += struct.pack('!H', 32)
 
         return hdr
 
