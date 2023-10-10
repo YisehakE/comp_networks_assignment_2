@@ -13,19 +13,51 @@ class TestHeaders(unittest.TestCase):
 
         # hdr = IPv4Header.from_bytes(ip_hdr_bytes)
 
-        # print(hdr)
-
         # actual_value = (hdr.length, hdr.ttl, hdr.protocol,
         #         hdr.checksum, hdr.src, hdr.dst)
         
-        # print("TEST:: HDR: ", str(hdr))
         # print("TEST:: actual: ", str(actual_value))
-        # correct_value = (0, 0, 0, 0, '0.0.0.0', '0.0.0.0')
+        # correct_value = (517, 128, 6, 0, '192.168.10.20', '192.168.15.2')
 
         # self.assertEqual(actual_value, correct_value)
 
 
         ip_hdr_obj = IPv4Header(1057, 64, 17, 0, '128.187.82.254', '128.170.51.63')
+
+        '''
+
+        421 40 11
+        ////////////////// Length
+        1057 / 16 = 66 R1
+        66 / 16 = 4 R2
+        4 / 16 = 0 R4
+
+        Hex:    4    2   1
+        Bin:  0100 0010 0001
+        Dex:  1024 + 32 + 1    = 1057
+
+        ////////////////// TTL
+        64 / 16 = 4 R0
+        4 / 16 = 0 R4
+
+        Hex:    4    0  
+        Bin:  0100 0000 
+        Dex:  64  + 0   = 64
+
+        ////////////////// Protocol
+        17 / 16 = 1 R1
+        1 / 16 = 0 R1
+
+        Hex:    1    1  
+        Bin:  00001 00001
+        Dex:  16  + 1   = 17
+
+        ////////////////// Source
+        
+        
+        
+        
+        '''
 
 
         actual_value = binascii.hexlify(ip_hdr_obj.to_bytes())

@@ -7,6 +7,7 @@ from cougarnet.util import \
 
 
 from ipaddress import ip_address
+import socket
 import binascii as bs
 
 
@@ -76,18 +77,34 @@ class IPv4Header:
 
         dst_str = str(ip_address(dst))
         print("CODE:: dst ip str: ", dst_str)
-
-
-
         
         return cls(length, ttl, protocol, checksum, src_str, dst_str)
     
         # return cls(0, 0, 0, 0, '0.0.0.0', '0.0.0.0')
+    def convert_addr_to_bin(self, addr, type):
+        ip_addr_values = addr.split('.')
+        print("CODE:: ", type, " vals: ", ip_addr_values)
+        addr_bin_stream = b''
+        for val in ip_addr_values: 
+            val_int = int(val)
+            val_bin = struct.pack('!B', val_int)
 
+            print("CODE: for byte str = ", val, "| int val: ", val_int, " && hex: ", val_bin)
+            addr_bin_stream += val_bin
+        print("CODE:: add byte stream: ", addr_bin_stream)
+        return addr_bin_stream
+        
     def to_bytes(self) -> bytes:
         hdr = b''
 
         # Pack 16 bits before "length" (4 bits for version, 4 bits for IHL, 8 bits for diff. service  = 16 total)
+        ver_fluff = struct.pack('!H', 4)
+        ihl_fluff = struct.pack('!H', 5)
+        diff_fluff = struct.pack('!H', 0)
+        print("CODE:: ver fluff: ", ver_fluff)
+        print("CODE:: ihl fluff: ", ihl_fluff)
+        print("CODE:: diff fluff: ", diff_fluff)
+
         hdr += struct.pack('!H', 4)
         hdr += struct.pack('!H', 5)
         hdr += struct.pack('!H', 0)
@@ -95,14 +112,43 @@ class IPv4Header:
         hdr += struct.pack('!H', self.length) # 1. Pack 1st attribute in order -> length
 
         # TODO: pack 32 bits before "ttl" (16 bits for id, 3 bits for flags, 13 bits for fragment  = 32 total)
+        id_fluff = struct.pack('!H', 0)
+        print("CODE:: id fluff: ", id_fluff)
+
         hdr += struct.pack('!H', 0)
         hdr += struct.pack('!H', 0)
  
         hdr += struct.pack('!B', self.ttl) # 2. Pack 2nd attribute in order -> ttl
         hdr += struct.pack('!B', self.protocol) # 3. Pack 2nd attribute in order -> protocol
         hdr += struct.pack('!H', self.checksum) # 4. Pack 2nd attribute in order -> checksum
-        hdr += struct.pack('!13s', bytes(self.src, "utf-8"))
-        hdr += struct.pack('!13s', bytes(self.dst, "utf-8"))
+
+        src_bytes = bytes(self.src, "utf-8")
+        dst_bytes = bytes(self.dst, "utf-8")
+        src_pack = struct.pack('!13s', src_bytes)
+        dst_pack = struct.pack('!13s', dst_bytes)
+
+        print("CODE:: src bytes: ", src_bytes)
+        print("CODE:: dst bytes: ", dst_bytes)
+        print("CODE:: src pack: ", src_pack)
+        print("CODE:: dst pack: ", dst_pack)
+
+
+        src_bin_stream_1 = self.convert_addr_to_bin(self.src, "source")
+        src_bin_stream_2 = socket.inet_aton(self.src)
+        print("CODE:: src byte stream (own): ", src_bin_stream_1)
+        print("CODE:: src byte stream (lib): ", src_bin_stream_2)
+
+        hdr += src_bin_stream_2
+
+        dst_bin_stream_1 = self.convert_addr_to_bin(self.dst, "destination")
+        dst_bin_stream_2 = socket.inet_aton(self.dst)
+
+        print("CODE:: dst byte stream (own): ", dst_bin_stream_1)
+        print("CODE:: dst byte stream (lib): ", dst_bin_stream_2)
+
+        hdr += dst_bin_stream_2
+
+        print("CODE:: len of bin stream: ", len(hdr))
 
         # TODO: pack 32 bits before "ttl" (32 bits for options = 32 total)
 
