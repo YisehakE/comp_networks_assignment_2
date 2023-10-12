@@ -133,38 +133,55 @@ class TCPHeader:
     
         # TODO: figure out how to break down the bytes according to TCP diagram and python struc unpacks
 
-        # 
+        # Header
+
+        print("CODE:: unpacked src: ", str(hdr[:2]))
+        src, = struct.unpack('!H', hdr[:2])
+        print("CODE:: packed src: ", src)
+
+        print("CODE:: unpacked dst: ", str(hdr[2:4]))
+        dst, = struct.unpack('!H', hdr[2:4])
+        print("CODE:: acked dst: ", dst)
+
+
+        print("CODE:: unpacked seq: ", str(hdr[4:8]))
+        seq, = struct.unpack('!I', hdr[4:8])
+        print("CODE:: packed seq: ", seq)
+
+
+        print("CODE:: unpacked ack: ", str(hdr[8:12]))
+        ack, = struct.unpack('!I', hdr[8:12])
+        print("CODE:: packed ack: ", ack)
+
+        print("CODE:: unpacked flags (before shift): ", str(hdr[13:14]))
+        flags, = struct.unpack('!B', hdr[13:14])
+        print("CODE:: packed flags (before shift): ", flags)
         
-        src, = struct.unpack('', hdr[])
-        dst, = struct.unpack('', hdr[])
-        seq, = struct.unpack('', hdr[])
+        print("CODE:: unpacked checksum: ", str(hdr[16:18]))
+        checksum, = struct.unpack('!H', hdr[16:18])
+        print("CODE:: packed checksum: ", checksum)
 
-        ack, = struct.unpack('', hdr[])
-        flags, = struct.unpack('', hdr[])
-        checksum, = struct.unpack('', hdr[])
-
-
-        # return cls(src, dst, seq, ack, flags, checksum)
-        pass
-    
-        # return cls(0, 0, 0, 0, 0, 0)
+        return cls(src, dst, seq, ack, flags, checksum)
 
     def to_bytes(self) -> bytes:
-        
-        # TODO: Flesh out for 1) Transport Layer Lab :: part 1 :: step 1
-
-
         hdr = b''
 
         hdr += struct.pack('!H', self.sport)
-
         hdr += struct.pack('!H', self.dport)
+        hdr += struct.pack('!I', self.seq)
+        hdr += struct.pack('!I', self.ack)
 
-        hdr += struct.pack('!H', self.seq)
+        # Pack 10 bits before "flags" (4 bits for data offset + 4 bits for reserved + 2 bits ECN = 10 bits total)
 
-        hdr += struct.pack('!H', self.flags)
-
+        # To fit integers default value 4 and 0 for data offset and reserved respectively in one byte: 
+        # 1) turn 4 & 0 into binary, in respective order 
+        # 2) convert that to hex, respectively 
+        # 3) convert hex to decimal 
+        # 4) pack decimal in one byte
+        hdr += struct.pack('!B', 80)
+        hdr += struct.pack('!B', self.flags) # Since ECN is 0, doesn't need fluff before
+        hdr += struct.pack('!H', 64) # Pack 16 bits before "checksum" (16 bits for window  = 16 bits total)
         hdr += struct.pack('!H', self.checksum)
-      
-
+        hdr += struct.pack('!H', 0) # Pack 16 bits after "checksum" (16 bits for urgent pointer  = 16 bits total)
+    
         return hdr

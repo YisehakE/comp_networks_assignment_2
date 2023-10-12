@@ -3,6 +3,7 @@ import unittest
 
 from headers import IPv4Header, UDPHeader, TCPHeader
 
+
 from mysocket import TCP_FLAGS_SYN, TCP_FLAGS_ACK, \
         IPPROTO_TCP, IPPROTO_UDP
     
@@ -77,26 +78,23 @@ class TestHeaders(unittest.TestCase):
         self.assertEqual(actual_value, correct_value)
 
 
+    def convert_to_hex_bin():
+        pass
+
     def test_tcp_header(self):
         tcp_hdr_bytes = b'\xffC\xd5\xd3\x00\xa4DV\x00\x82\\,P\x10\x00@\x00\x00\x00\x00'
-
-
+        hdr_hex = binascii.hexlify(tcp_hdr_bytes)
+        # ff/43/d5/d3/00/a4/44/56/00/82/5c/2c/50/10/00/40/00/00/00/00
         hdr = TCPHeader.from_bytes(tcp_hdr_bytes)
-
         actual_value = (hdr.sport, hdr.dport, hdr.seq,
                 hdr.ack, hdr.flags, hdr.checksum)
-        correct_value = (0, 0, 0, 0, 0, 0)
-
+        correct_value = (65347, 54739, 10765398, 8543276, 16, 0)
         self.assertEqual(actual_value, correct_value)
-
-
         tcp_hdr_obj = TCPHeader(1123, 2025, 876539, 452850, TCP_FLAGS_SYN | TCP_FLAGS_ACK, 0)
-
         actual_value = binascii.hexlify(tcp_hdr_obj.to_bytes())
-        correct_value = b''
 
+        correct_value = b'046307e9000d5ffb0006e8f25012004000000000'
         self.assertEqual(actual_value, correct_value)
-        pass
 
 if __name__ == '__main__':
     unittest.main()
