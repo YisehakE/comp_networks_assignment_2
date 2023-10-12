@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 
+
 TCP_FLAGS_SYN = 0x02
 TCP_FLAGS_RST = 0x04
 TCP_FLAGS_ACK = 0x10
@@ -26,6 +27,8 @@ from headers import IPv4Header, UDPHeader, TCPHeader, \
 IPPROTO_TCP = 6 # Transmission Control Protocol
 IPPROTO_UDP = 17 # User Datagram Protocol
 
+from icecream import ic
+
 class UDPSocket:
     def __init__(self, local_addr: str, local_port: int,
             send_ip_packet_func: callable,
@@ -43,17 +46,18 @@ class UDPSocket:
 
         # TODO: figure out if UDP header needs to be extracted
         ip_header = pkt[:IP_HEADER_LEN] # Extract IP header in packet first
-        udp_header = pkt[IP_HEADER_LEN:UDP_HEADER_LEN] # Extract UDP header from packet second
+        udp_header = pkt[IP_HEADER_LEN:UDPIP_HEADER_LEN] # Extract UDP header from packet second
         raw_data = pkt[UDPIP_HEADER_LEN:] # Extract raw data from packet last
 
-        ip_header_obj = IPv4Header.from_bytes(ip_header)
-        udp_header_obj = UDPHeader.from_bytes(udp_header)
+        ip_hdr_obj = IPv4Header.from_bytes(ip_header)
+        udp_hdr_obj = UDPHeader.from_bytes(udp_header)
 
-        remote_addr = ip_header_obj.src
-        remote_port = udp_header_obj.sport
+        remote_addr = ip_hdr_obj.src
+        remote_port = udp_hdr_obj.sport
         
          # 2. Append data | remote OG IP addr | remote OG port
 
+        ic((raw_data, remote_addr, remote_port))
         # TODO: figure out if we're send raw data or parsing further than addr and port
         self.buffer.append((raw_data, remote_addr, remote_port))
 
@@ -72,9 +76,9 @@ class UDPSocket:
               Src addr - Source address from function arg [src]
               Dst addr - Destination address from function arg [dst]
         '''
-        ip_datagram_length = IP_HEADER_LEN + len(data)
-        ip_header_obj = IPv4Header(64, ip_datagram_length, IPPROTO_UDP, src, dst)
-        pkt +=ip_header_obj.to_bytes()
+        ip_datagram_len = IP_HEADER_LEN + len(data)
+        ip_hdr_obj = IPv4Header(ip_datagram_len, 64, IPPROTO_UDP, 0, src, dst)
+        pkt +=ip_hdr_obj.to_bytes()
         ''' Creating UDP header:
               Src port - Source port from this socket [sport]]
               Dst port - Destination port from function arg [dport]
@@ -82,8 +86,10 @@ class UDPSocket:
               Checksum - Default value of 0
         '''
         udp_datagram_length = UDP_HEADER_LEN + len(data)
-        udp_header_obj = UDPHeader(sport, dport, udp_datagram_length, 0)
-        pkt += udp_header_obj.to_bytes()
+        udp_hdr_obj = UDPHeader(sport, dport, udp_datagram_length, 0)
+        pkt += udp_hdr_obj.to_bytes()
+
+        pkt += data # Add the data stream after headers
 
         return pkt
 

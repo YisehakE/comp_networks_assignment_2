@@ -18,6 +18,10 @@ class TransportHost(Host):
         pass
 
     def handle_udp(self, pkt: bytes) -> None:
+        
+        ip_hdr = pkt[:IP_HEADER_LEN]
+        udp_hdr = pkt[]
+
         pass
 
     def install_socket_udp(self, local_addr: str, local_port: int,
