@@ -43,8 +43,6 @@ class UDPSocket:
 
     def handle_packet(self, pkt: bytes) -> None:
         # 1. parse the packet
-
-        # TODO: figure out if UDP header needs to be extracted
         ip_header = pkt[:IP_HEADER_LEN] # Extract IP header in packet first
         udp_header = pkt[IP_HEADER_LEN:UDPIP_HEADER_LEN] # Extract UDP header from packet second
         raw_data = pkt[UDPIP_HEADER_LEN:] # Extract raw data from packet last
@@ -54,11 +52,8 @@ class UDPSocket:
 
         remote_addr = ip_hdr_obj.src
         remote_port = udp_hdr_obj.sport
-        
+      
          # 2. Append data | remote OG IP addr | remote OG port
-
-        ic((raw_data, remote_addr, remote_port))
-        # TODO: figure out if we're send raw data or parsing further than addr and port
         self.buffer.append((raw_data, remote_addr, remote_port))
 
         # 3. Call self._notify_on_data() to let application know data needs to be read
