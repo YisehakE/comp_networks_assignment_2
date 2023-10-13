@@ -30,35 +30,31 @@ class TransportHost(Host):
     
     '''
     def handle_udp(self, pkt: bytes) -> None:
-        ''' References:
-              1) lecture 03: Transport (slide 11-AFTER)
-              2) https://www.sciencedirect.com/topics/computer-science/registered-port
+        ''' 
+          References:
+            1) CLASS LECTURE // Lecture 05: Transport (slide 11-AFTER)
+            2) ONLINE SOURCE // Registered ports: https://www.sciencedirect.com/topics/computer-science/registered-port
 
-              Questions
-                Q: w/ approach 1, are we assuming local address/port is the source addr/port
-                A:
-                
-                Q: We are not responsible for fleshing out the send_ip_packet & notify_on_data
-                  - So what would we need to pass in if built-in libraries are not needed? 
-                A: 
+          Questions
+            Q: With approach 1, are we assuming local address/port is the source addr/port?
+            A: Yes
+            
+            Q: We are not responsible for fleshing out the send_ip_packet & notify_on_data
+              - So what would we need to pass in if built-in libraries are not needed? 
+            A: You are to utilize the sockets in the mapping, and use the send/handle functions you built
 
-                Q: What is the key/value pair of socket_mapping_udp?
-                A: 
+            Q: What is the key/value pair of socket_mapping_udp?
+            A: Key = tuple[dst. addr -> str, dst. port -> int], Value= UDPSocket
         '''
-
-
         # 1. Parse the IP packet for headers (i.e IP & UDP) and data stream
         ip_hdr = pkt[:IP_HEADER_LEN]
         udp_hdr = pkt[IP_HEADER_LEN:UDPIP_HEADER_LEN]
-        raw_data = pkt[UDPIP_HEADER_LEN:]
 
         # 2. Convert parsed bytes into respective header objects, extract attributes
         ip_hdr_obj = IPv4Header.from_bytes(ip_hdr)
-        ip_src = ip_hdr_obj.src
         ip_dst = ip_hdr_obj.dst
 
         udp_hdr_obj = UDPHeader.from_bytes(udp_hdr)
-        udp_sport = udp_hdr_obj.sport
         udp_dport =udp_hdr_obj.dport
 
         data_len_ip = ip_hdr_obj.length - IP_HEADER_LEN

@@ -89,7 +89,6 @@ class IPv4Header:
 
         dst_bin = socket.inet_aton(self.dst)
         hdr += dst_bin
-
         return hdr
 
 
@@ -135,32 +134,12 @@ class TCPHeader:
 
         # Header
 
-        print("CODE:: unpacked src: ", str(hdr[:2]))
         src, = struct.unpack('!H', hdr[:2])
-        print("CODE:: packed src: ", src)
-
-        print("CODE:: unpacked dst: ", str(hdr[2:4]))
         dst, = struct.unpack('!H', hdr[2:4])
-        print("CODE:: acked dst: ", dst)
-
-
-        print("CODE:: unpacked seq: ", str(hdr[4:8]))
         seq, = struct.unpack('!I', hdr[4:8])
-        print("CODE:: packed seq: ", seq)
-
-
-        print("CODE:: unpacked ack: ", str(hdr[8:12]))
         ack, = struct.unpack('!I', hdr[8:12])
-        print("CODE:: packed ack: ", ack)
-
-        print("CODE:: unpacked flags (before shift): ", str(hdr[13:14]))
-        flags, = struct.unpack('!B', hdr[13:14])
-        print("CODE:: packed flags (before shift): ", flags)
-        
-        print("CODE:: unpacked checksum: ", str(hdr[16:18]))
+        flags, = struct.unpack('!B', hdr[13:14])        
         checksum, = struct.unpack('!H', hdr[16:18])
-        print("CODE:: packed checksum: ", checksum)
-
         return cls(src, dst, seq, ack, flags, checksum)
 
     def to_bytes(self) -> bytes:

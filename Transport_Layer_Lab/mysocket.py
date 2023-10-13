@@ -41,20 +41,37 @@ class UDPSocket:
 
         self.buffer = []
 
+    ''' Helper function to parse headers and data from a packet.
+    @Type pkt: bytes
+    @param pkt: a packet from a host containing header and data info to be handled.
+    
+    @Rtype: tuple[bytes, bytes, bytes]
+    @Return: A tuple consisting of IP header, UDP header, & raw data byte streams in order.
+    '''
+    def parse_packet(self, pkt: bytes) -> tuple(bytes, bytes, bytes):
+        # TODO: flesh out helper function
+        ip_hdr = pkt[:IP_HEADER_LEN]
+        udp_hdr = pkt[IP_HEADER_LEN:UDPIP_HEADER_LEN]
+        data = pkt[UDPIP_HEADER_LEN:]
+
+        return ip_hdr, udp_hdr, data
+        
+
     def handle_packet(self, pkt: bytes) -> None:
         # 1. parse the packet
-        ip_header = pkt[:IP_HEADER_LEN] # Extract IP header in packet first
-        udp_header = pkt[IP_HEADER_LEN:UDPIP_HEADER_LEN] # Extract UDP header from packet second
-        raw_data = pkt[UDPIP_HEADER_LEN:] # Extract raw data from packet last
+        # ip_hdr, udp_hdr, data = self.parse_packet(pkt)
+        ip_hdr = pkt[:IP_HEADER_LEN] # Extract IP header in packet first
+        udp_hdr = pkt[IP_HEADER_LEN:UDPIP_HEADER_LEN] # Extract UDP header from packet second
+        data = pkt[UDPIP_HEADER_LEN:] # Extract raw data from packet last
 
-        ip_hdr_obj = IPv4Header.from_bytes(ip_header)
-        udp_hdr_obj = UDPHeader.from_bytes(udp_header)
+        ip_hdr_obj = IPv4Header.from_bytes(ip_hdr)
+        udp_hdr_obj = UDPHeader.from_bytes(udp_hdr)
 
         remote_addr = ip_hdr_obj.src
         remote_port = udp_hdr_obj.sport
       
          # 2. Append data | remote OG IP addr | remote OG port
-        self.buffer.append((raw_data, remote_addr, remote_port))
+        self.buffer.append((data, remote_addr, remote_port))
 
         # 3. Call self._notify_on_data() to let application know data needs to be read
         self._notify_on_data()
@@ -71,9 +88,13 @@ class UDPSocket:
               Src addr - Source address from function arg [src]
               Dst addr - Destination address from function arg [dst]
         '''
-        ip_datagram_len = IP_HEADER_LEN + len(data)
+        ip_datagram_len = UDPIP_HEADER_LEN + len(data)
+
+
         ip_hdr_obj = IPv4Header(ip_datagram_len, 64, IPPROTO_UDP, 0, src, dst)
-        pkt +=ip_hdr_obj.to_bytes()
+        pkt += ip_hdr_obj.to_bytes()
+
+
         ''' Creating UDP header:
               Src port - Source port from this socket [sport]]
               Dst port - Destination port from function arg [dport]
@@ -118,6 +139,7 @@ class TCPListenerSocket(TCPSocketBase):
         self._send_ip_packet_func = send_ip_packet_func
         self._notify_on_data_func = notify_on_data_func
 
+   
 
     def handle_packet(self, pkt: bytes) -> None:
         ip_hdr = IPv4Header.from_bytes(pkt[:IP_HEADER_LEN])
@@ -202,16 +224,139 @@ class TCPSocket(TCPSocketBase):
 
 
     def initiate_connection(self) -> None:
-        pass
+        # TODO: complete for Lab 1:: Part 3
 
-    def handle_syn(self, pkt: bytes) -> None:
+        # 1. 
+
+
+        # 2. 
+
+
+        # 3.
+
         pass
+    
+
+    ''' Helper function to parse headers and data from a packet.
+    @Type pkt: 
+    @param pkt: 
+    
+    @Rtype: Tuple[bytes, bytes, bytes]
+    @Return: A tuple consisting of IP header, TCP header, and raw data byte streams in order.
+    '''
+    def parse_packet(self, pkt: bytes) -> tuple(bytes, bytes, bytes):
+        # TODO: flesh out helper function
+        ip_hdr = pkt[:IP_HEADER_LEN]
+        tcp_hdr = pkt[IP_HEADER_LEN:TCPIP_HEADER_LEN]
+        data = pkt[TCPIP_HEADER_LEN:]
+
+        return ip_hdr, tcp_hdr, data
+        
+    ''' 
+      Reference(s)
+        1) CLASS LECTURE // Lecture 07: TCP (slide 19-25)
+        2) 
+
+      Question(s)
+        Q: When do we start to care to send NACKs, if a packet was a not received?
+        A: 
+
+        Q:
+    
+    '''
+    def handle_syn(self, pkt: bytes) -> None:
+        '''
+        Flow 1: This is the first packet sent... 
+                    Host A (client) -> Host B (server)
+      
+        '''
+        # 1. Parse the packet for headers and data
+        # ip_hdr, tcp_hdr, data = self.parse_packet(pkt)
+  
+        ip_hdr = pkt[:IP_HEADER_LEN]
+        tcp_hdr = pkt[IP_HEADER_LEN:TCPIP_HEADER_LEN]
+        data = pkt[TCPIP_HEADER_LEN:]
+
+        ip_hdr_obj = IPv4Header.from_bytes(ip_hdr)
+        tcp_hdr_obj = TCPHeader.from_bytes(tcp_hdr)
+
+        tcp_flag = tcp_hdr_obj.flags
+        tcp_seq = tcp_hdr_obj.seq
+
+        # 2. Check if SYN was sent in flags
+        # 3. Set remote-side base seq of this class to TCP header seqno, 
+        # 4. Send this packet through this class's send_packet, using 
+        #    seq--ack--flags specified in prompt AND this packet's parsed data
+        # 5. Set state to SYN_RECEIVED to indicate Host B (server) received Host A's SYN
+
+        if tcp_flag & TCP_FLAGS_SYN: # Bitwise check if 2nd bit from right is "lit" up
+            self.base_seq_other = tcp_seq
+            syn_ack = TCP_FLAGS_ACK | TCP_FLAGS_SYN # Combined bit at 2nd pos. from right and 5th pos from right (i.e 0x12)
+            self.send_packet(seq=self.base_seq_self, ack=self.base_seq_other + 1, flags=syn_ack, data=data)
+            self.state = TCP_STATE_SYN_RECEIVED
+        else:
+            pass # do nothing is SYN flag was not signified in tcp header of packet
+            
 
     def handle_synack(self, pkt: bytes) -> None:
-        pass
+        '''
+        Flow 2: This is the second packet sent...
+                      Host B (server) -> Host A (client)
+        
+        '''
+        # 1. Parse the packet for headers and data
+        ip_hdr = pkt[:IP_HEADER_LEN]
+        tcp_hdr = pkt[IP_HEADER_LEN:TCPIP_HEADER_LEN]
+        data = pkt[TCPIP_HEADER_LEN:]
+
+        ip_hdr_obj = IPv4Header.from_bytes(ip_hdr)
+        tcp_hdr_obj = TCPHeader.from_bytes(tcp_hdr)
+
+        tcp_ack = tcp_hdr_obj.ack
+        tcp_flag = tcp_hdr_obj.flags
+        tcp_seq = tcp_hdr_obj.seq
+
+        # 2. Check if SYN AND ACK was sent in flags
+        # 3. Set remote-side base seq of this class to TCP header seqno, 
+        # 4. Send this packet through this class's send_packet, using 
+        #    seq--ack--flags specified in prompt AND this packet's parsed data
+        # 5. Set state to SYN_RECEIVED to indicate Host B (server) received Host A's SYN
+        
+        # Bitwise check if 2nd AND 5th bits from right are "lit" up AND whether tcp's ack is this class' base seqno + 1
+        if (tcp_flag & (TCP_FLAGS_SYN | TCP_FLAGS_ACK)) and tcp_ack == self.base_seq_self + 1: 
+            self.base_seq_other = tcp_seq
+            self.send_packet(seq=self.base_seq_self, ack=self.base_seq_other + 1, flags=TCP_FLAGS_ACK, data=data)
+            self.state = TCP_STATE_ESTABLISHED
+        else:
+            pass # do nothing is SYN and ACK flags was not signified in tcp header of packet
 
     def handle_ack_after_synack(self, pkt: bytes) -> None:
-        pass
+        '''
+         Flow 3: This is the last packet sent... 
+                      Host A (client) -> Host B (server)
+        
+        '''
+
+        ip_hdr = pkt[:IP_HEADER_LEN]
+        tcp_hdr = pkt[IP_HEADER_LEN:TCPIP_HEADER_LEN]
+        data = pkt[TCPIP_HEADER_LEN:]
+
+        ip_hdr_obj = IPv4Header.from_bytes(ip_hdr)
+        tcp_hdr_obj = TCPHeader.from_bytes(tcp_hdr)
+
+        tcp_ack = tcp_hdr_obj.ack
+        tcp_flag = tcp_hdr_obj.flags
+        tcp_seq = tcp_hdr_obj.seq
+
+        # 2. Check if SYN AND ACK was sent in flags
+        # 3. Set remote-side base seq of this class to TCP header seqno, 
+        # 4. Send this packet through this class's send_packet, using 
+        #    seq--ack--flags specified in prompt AND this packet's parsed data
+        # 5. Set state to SYN_RECEIVED to indicate Host B (server) received Host A's SYN
+        
+        # Bitwise check if 2nd AND 5th bits from right are "lit" up AND whether tcp's ack is this class' base seqno + 1
+        if (tcp_flag & TCP_FLAGS_ACK) and tcp_ack == self.base_seq_self + 1: self.state = TCP_STATE_ESTABLISHED
+        else: pass # do nothing is SYN and ACK flags was not signified in tcp header of packet
 
     def continue_connection(self, pkt: bytes) -> None:
         if self.state == TCP_STATE_LISTEN:
@@ -227,11 +372,41 @@ class TCPSocket(TCPSocketBase):
     @classmethod
     def create_packet(cls, src: str, sport: int, dst: str, dport: int,
             seq: int, ack: int, flags: int, data: bytes=b'') -> bytes:
-        return b''
+        pkt = b''
+        ''' Creating IP header:
+              TTL - Default value of 64
+              Length - Length of IP Datagram [IP header len. + data len.]
+              Protocol - Next headers' associated proto. value [next header -> UDP: 17]
+              Checksum - Default value of 0
+              Src addr - Source address from function arg [src]
+              Dst addr - Destination address from function arg [dst]
+        '''
+        ip_datagram_len = IP_HEADER_LEN + len(data)
+        ip_hdr_obj = IPv4Header(ip_datagram_len, 64, IPPROTO_UDP, 0, src, dst)
+        ''' Creating TCP header:
+              Src port - Source port from this socket [sport]]
+              Dst port - Destination port from function arg [dport]
+              Seq -  current seqno this packet signifies in a stream
+              Flags - control bit notifying a SYN or ACK
+              Checksum - default value of 0
+        '''
+        tcp_hdr_obj = TCPHeader(sport=sport, dport=dport, seq=seq, ack=ack, flags=flags, checksum=0)
+
+        # Prepend the header objects in byte form to packet
+        pkt +=ip_hdr_obj.to_bytes()
+        pkt += tcp_hdr_obj.to_bytes()
+
+        pkt += data # Append the data stream after headers to packet
+        return pkt
 
     def send_packet(self, seq: int, ack: int, flags: int,
             data: bytes=b'') -> None:
-        pass
+        # TODO: complete for Lab 1:: Part 3
+
+        # TODO: figure out how to get params from src to dport..
+        pkt = self.create_packet(src=self._local_addr_, sport=self._local_port, dst=self._remote_addr, dport=self._remote_port, seq=seq, ack=ack, flags=flags, data=data)
+        self._send_ip_packet(pkt)
+      
 
     def handle_data(self, pkt: bytes) -> None:
         pass
