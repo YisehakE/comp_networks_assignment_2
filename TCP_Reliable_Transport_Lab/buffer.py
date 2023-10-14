@@ -200,6 +200,7 @@ class TCPReceiveBuffer(object):
 
 
     def get(self) -> tuple[bytes, int]:
-        
-        
+        # TODO: flesh out according to prompt
+
+
         pass
