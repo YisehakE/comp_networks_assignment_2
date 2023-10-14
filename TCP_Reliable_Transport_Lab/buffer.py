@@ -161,10 +161,14 @@ class TCPReceiveBuffer(object):
           adj_data_base = self.base_seq - sequence 
           self.buffer[self.base_seq] = data[adj_data_base:data_sz] # Store under base_seq since we trim for remaining bytes over base
         
-        # Case 3: (EDGE) handle_data sends in duplicate sequence number
+        # Case 3: (EDGE) handle_data sends in sequence number that already exists in  buffer
         if self.buffer.get(sequence) is not None:
            # Choose longer segment between existing & incoming
+           print("Existing case")
            existing_seg = self.buffer.get(sequence)
+           print("Existing sequence: ", existing_seg)
+           temp= data if data_sz > len(existing_seg) else existing_seg
+           print("Larger value: ", temp )
            self.buffer[sequence] = data if data_sz > len(existing_seg) else existing_seg
         
         # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
@@ -182,7 +186,9 @@ class TCPReceiveBuffer(object):
             prev_sz = len(prev_segment)
 
             if prev_seqno + prev_sz >= curr_seqno: # There is at least 1 duplicate byte starting w/ current seqno & beyond
-
+              print("Duplicate bytes found!")
+              print("Previous seqno, segment, sz: ", prev_seqno, prev_segment, prev_sz)
+              print("Current seqno, segment, sz: ", curr_seqno, curr_segment, curr_sz)
               # Case 1: prev segment engulfs the whole current (i.e all of current segment is duplicated)
               if prev_seqno + prev_sz == curr_seqno + curr_sz:
                  # TODO: figure out 1)if this check is needed and 2)how to handle it
