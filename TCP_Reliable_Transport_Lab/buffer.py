@@ -155,24 +155,25 @@ class TCPReceiveBuffer(object):
         if sequence + data_sz < self.base_seq: # 
           return
       
-        # Case 2: (EDGE) handle_data sending in data where some bytes in beginning are old, remaining are new
         if sequence < self.base_seq and sequence + data_sz >= self.base_seq:
+          # Case 2: (EDGE) handle_data sending in data where some bytes in beginning are old, remaining are new
+
           # TODO: determine if extra measure needed if we realize that the beginning "hole" starting from base been filled
           adj_data_base = self.base_seq - sequence 
           self.buffer[self.base_seq] = data[adj_data_base:data_sz] # Store under base_seq since we trim for remaining bytes over base
-        
-        # Case 3: (EDGE) handle_data sends in sequence number that already exists in  buffer
-        if self.buffer.get(sequence) is not None:
-           # Choose longer segment between existing & incoming
-           print("Existing case")
-           existing_seg = self.buffer.get(sequence)
-           print("Existing sequence: ", existing_seg)
-           temp= data if data_sz > len(existing_seg) else existing_seg
-           print("Larger value: ", temp )
-           self.buffer[sequence] = data if data_sz > len(existing_seg) else existing_seg
-        
-        # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
-        self.buffer[sequence] = data
+        elif self.buffer.get(sequence) is not None:
+          # Case 3: (EDGE) handle_data sends in sequence number that already exists in buffer
+
+          # Choose longer segment between existing & incoming
+          print("Existing case")
+          existing_seg = self.buffer.get(sequence)
+          print("Existing sequence: ", existing_seg)
+          temp= data if data_sz > len(existing_seg) else existing_seg
+          print("Larger value: ", temp )
+          self.buffer[sequence] = data if data_sz > len(existing_seg) else existing_seg
+        else: 
+          # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
+          self.buffer[sequence] = data
 
         buff_items = [(key, val) for key, val in self.buffer.items()] # Retrieve list of sequence<->segment pairs
         buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
