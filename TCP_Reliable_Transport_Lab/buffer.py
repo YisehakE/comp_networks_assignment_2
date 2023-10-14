@@ -169,11 +169,8 @@ class TCPReceiveBuffer(object):
            self.buffer[sequence] = data if data_sz > len(existing_seg) else existing_seg
            return
         
-
         # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
         self.buffer[sequence] = data
-
-        
 
         buff_items = [(key, val) for key, val in self.buffer.items()] # Retrieve list of sequence<->segment pairs
         buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
@@ -203,4 +200,6 @@ class TCPReceiveBuffer(object):
 
 
     def get(self) -> tuple[bytes, int]:
+        
+        
         pass

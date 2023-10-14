@@ -96,25 +96,39 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.buffer,
                 {2024: b'def', 2027: b'ghi', 2033: b'mn'})
         self.assertEqual(buf.base_seq, 2021)
-
         print("---------------------------------------------------------------")
         print("                        1st set 'PUT' passed!")
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
-        # # ignore a chunk starting with the same sequence number if the existing
-        # # chunk is longer
-        # buf.put(b'm', 2033)
-        # self.assertEqual(buf.buffer,
-        #         {2024: b'def', 2027: b'ghi', 2033: b'mn'})
-        # self.assertEqual(buf.base_seq, 2021)
 
-        # # overwrite a chunk starting with the same sequence number if the
-        # # existing chunk is shorter
-        # buf.put(b'mno', 2033)
-        # self.assertEqual(buf.buffer,
-        #         {2024: b'def', 2027: b'ghi', 2033: b'mno'})
-        # self.assertEqual(buf.base_seq, 2021)
+        print("---------------------------------------------------------------")
+        print("                        2nd set of 'PUT'\n|Ex. from 'PUT' prompt| existing sequence is longer")
+        print("---------------------------------------------------------------")
+        # ignore a chunk starting with the same sequence number if the existing
+        # chunk is longer
+        buf.put(b'm', 2033)
+        self.assertEqual(buf.buffer,
+                {2024: b'def', 2027: b'ghi', 2033: b'mn'})
+        self.assertEqual(buf.base_seq, 2021)
+        print("---------------------------------------------------------------")
+        print("                        2nd set 'PUT' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
+
+        print("---------------------------------------------------------------")
+        print("                        3rd set of 'PUT'\n|Ex. from 'PUT' prompt| existing sequence is shorter")
+        print("---------------------------------------------------------------")
+        # overwrite a chunk starting with the same sequence number if the
+        # existing chunk is shorter
+        buf.put(b'mno', 2033)
+        self.assertEqual(buf.buffer,
+                {2024: b'def', 2027: b'ghi', 2033: b'mno'})
+        self.assertEqual(buf.base_seq, 2021)
+        print("---------------------------------------------------------------")
+        print("                        3rd set 'PUT' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
         # # try to get ready data; none is ready because initial bytes are
         # # missing
