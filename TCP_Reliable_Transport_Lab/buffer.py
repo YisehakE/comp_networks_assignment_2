@@ -174,7 +174,8 @@ class TCPReceiveBuffer(object):
         self.buffer[sequence] = data
 
         
-        buff_items = self.buffer.items() # Retrieve list of sequence<->segment pairs
+
+        buff_items = [(key, val) for key, val in self.buffer.items()] # Retrieve list of sequence<->segment pairs
         buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
 
         for i, seg_pair in enumerate(buff_items):
