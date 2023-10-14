@@ -202,5 +202,30 @@ class TCPReceiveBuffer(object):
     def get(self) -> tuple[bytes, int]:
         # TODO: flesh out according to prompt
 
+        # 0. Initialize return values
+        cont_set = b''
+        prev_base_seq = self.base_seq
 
+        # 1. Retrieve buffer items & compile into sorted list 
+        buff_items = [(key, val) for key, val in self.buffer.items()] # Retrieve list of sequence<->segment pairs
+        buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
+
+        # 2. 
+        for i, seg_pair in enumerate(buff_items):
+           
+           if i != 0: # Ensure we have a previous segment to check
+              
+              # Case 1: There is a detected gap, return cont_set as is
+              if ():
+                 pass
+              # Case 2: Previous segment overlaps current (i.e duplicates), switching required
+              if (): # TODO: retrieve logic from PUT
+                pass
+
+              # Case 3: No gap and no duplicates, previous and current segment are perfectly continguos
+              
+              pass
+           pass
+
+        return (cont_set, prev_base_seq)
         pass
