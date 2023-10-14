@@ -180,7 +180,7 @@ class TCPReceiveBuffer(object):
 
         for i, seg_pair in enumerate(buff_items):
           curr_seqno, curr_segment = seg_pair
-          curr_sz = len(curr_sz)
+          curr_sz = len(curr_segment)
           
           if i != 0: # Ensure we have a previous segment to check
             prev_seqno, prev_segment  = buff_items[i - 1]
