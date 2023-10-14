@@ -160,14 +160,12 @@ class TCPReceiveBuffer(object):
           # TODO: determine if extra measure needed if we realize that the beginning "hole" starting from base been filled
           adj_data_base = self.base_seq - sequence 
           self.buffer[self.base_seq] = data[adj_data_base:data_sz] # Store under base_seq since we trim for remaining bytes over base
-          return 
         
         # Case 3: (EDGE) handle_data sends in duplicate sequence number
         if self.buffer.get(sequence) is not None:
            # Choose longer segment between existing & incoming
            existing_seg = self.buffer.get(sequence)
            self.buffer[sequence] = data if data_sz > len(existing_seg) else existing_seg
-           return
         
         # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
         self.buffer[sequence] = data
