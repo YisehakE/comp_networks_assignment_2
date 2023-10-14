@@ -202,6 +202,10 @@ class TCPReceiveBuffer(object):
               new_curr_segment = curr_segment[new_eqv_seqno:curr_sz] # Trim duplicated bytes from current segment
               self.buffer[new_seqno] = new_curr_segment # Populate updated segment w/ new seqno in buffer!
 
+            print("No duplicates bytes found!")
+            print("Previous seqno, segment, sz: ", prev_seqno, prev_segment, prev_sz)
+            print("Current seqno, segment, sz: ", curr_seqno, curr_segment, curr_sz)
+
 
     def get(self) -> tuple[bytes, int]:
         # TODO: flesh out according to prompt
