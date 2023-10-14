@@ -9,14 +9,24 @@ class TestBuffer(unittest.TestCase):
     def test_send_buffer(self):
         buf = TCPSendBuffer(1057)
 
+        print("---------------------------------------------------------------")
+        print("                        Initial utility Tests")
+        print("---------------------------------------------------------------")
         self.assertEqual(buf.buffer, b'')
         self.assertEqual(buf.base_seq, 1057)
         self.assertEqual(buf.next_seq, 1057)
         self.assertEqual(buf.last_seq, 1057)
         self.assertEqual(buf.bytes_outstanding(), 0)
         self.assertEqual(buf.bytes_not_yet_sent(), 0)
+        print("---------------------------------------------------------------")
+        print("                        Utility tests passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
+       
 
-
+        print("---------------------------------------------------------------")
+        print("                        1st set 'PUT' Tests")
+        print("---------------------------------------------------------------")
         buf.put(b'abcdefg')
         self.assertEqual(buf.buffer, b'abcdefg')
         self.assertEqual(buf.base_seq, 1057)
@@ -25,7 +35,15 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.bytes_outstanding(), 0)
         self.assertEqual(buf.bytes_not_yet_sent(), 7)
 
+        print("---------------------------------------------------------------")
+        print("                        1st set 'PUT' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
+       
 
+        print("---------------------------------------------------------------")
+        print("                        2nd set 'PUT'Tests")
+        print("---------------------------------------------------------------")
         buf.put(b'hijk')
         self.assertEqual(buf.buffer, b'abcdefghijk')
         self.assertEqual(buf.base_seq, 1057)
@@ -34,7 +52,16 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.bytes_outstanding(), 0)
         self.assertEqual(buf.bytes_not_yet_sent(), 11)
 
+        print("---------------------------------------------------------------")
+        print("                        2nd set 'PUT' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
+
+
+        print("---------------------------------------------------------------")
+        print("                        1st set 'GET' Tests")
+        print("---------------------------------------------------------------")
         data, seq = buf.get(4)
         self.assertEqual(data, b'abcd')
         self.assertEqual(seq, 1057)
@@ -45,7 +72,14 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.bytes_outstanding(), 4)
         self.assertEqual(buf.bytes_not_yet_sent(), 7)
 
+        print("---------------------------------------------------------------")
+        print("                        1st set 'GET' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
+        print("---------------------------------------------------------------")
+        print("                        2nd set 'GET' Tests")
+        print("---------------------------------------------------------------")
         data, seq = buf.get(4)
         self.assertEqual(data, b'efgh')
         self.assertEqual(seq, 1061)
@@ -56,7 +90,15 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.bytes_outstanding(), 8)
         self.assertEqual(buf.bytes_not_yet_sent(), 3)
 
+        print("---------------------------------------------------------------")
+        print("                        2nd set 'GET' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
+
+        print("---------------------------------------------------------------")
+        print("                         'SLIDE' Testss")
+        print("---------------------------------------------------------------")
         buf.slide(1061)
         self.assertEqual(buf.buffer, b'efghijk')
         self.assertEqual(buf.base_seq, 1061)
@@ -64,8 +106,13 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.last_seq, 1068)
         self.assertEqual(buf.bytes_outstanding(), 4)
         self.assertEqual(buf.bytes_not_yet_sent(), 3)
+        print("---------------------------------------------------------------")
+        print("                         'SLIDE' tests passed!")
+        print("---------------------------------------------------------------")
 
-
+        print("---------------------------------------------------------------")
+        print("                        'GET_RESEND' Tests")
+        print("---------------------------------------------------------------")
         data, seq = buf.get_for_resend(4)
         self.assertEqual(data, b'efgh')
         self.assertEqual(seq, 1061)
@@ -75,8 +122,15 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.last_seq, 1068)
         self.assertEqual(buf.bytes_outstanding(), 4)
         self.assertEqual(buf.bytes_not_yet_sent(), 3)
+        print("---------------------------------------------------------------")
+        print("                        'GET_RESEND' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
 
+        print("---------------------------------------------------------------")
+        print("                        Final 'GET' Tests")
+        print("---------------------------------------------------------------")
         data, seq = buf.get(4)
         self.assertEqual(data, b'ijk')
         self.assertEqual(seq, 1065)
@@ -86,6 +140,16 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.last_seq, 1068)
         self.assertEqual(buf.bytes_outstanding(), 7)
         self.assertEqual(buf.bytes_not_yet_sent(), 0)
+        print("---------------------------------------------------------------")
+        print("                        Final 'GET' passed!")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
+
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
+        print("                        ALL PASSED")
+        print("---------------------------------------------------------------")
 
 
     def test_receive_buffer(self):
