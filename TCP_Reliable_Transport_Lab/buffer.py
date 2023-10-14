@@ -6,22 +6,17 @@ class TCPSendBuffer(object):
         self.last_seq = self.base_seq
 
     def bytes_not_yet_sent(self) -> int:
-        # TODO: see if there's any edge cases to worry about
         return self.last_seq - self.next_seq
 
     def bytes_outstanding(self) -> int:
-        # TODO: see if there's any edge cases to worry about
         return self.next_seq - self.base_seq
 
     def put(self, data: bytes) -> int:
-        # TODO: flesh out for Part 1: TCP send buffer
         prev_last_seq = self.last_seq
         self.buffer += data
         self.last_seq += len(data)
         
         return prev_last_seq # TODO: determine what the return value is 
-
-
     ''' 
       Question(s):
         Q: Along with next_seq getting updated, should we be updating last_seq?
@@ -38,62 +33,14 @@ class TCPSendBuffer(object):
         eqv_last_seq = self.last_seq - self.base_seq
 
         if size > len(self.buffer) or eqv_next_seq + size > eqv_last_seq:
-          print("1st case" + "\n")
-
-          print("Buffer: ", self.buffer)
-          print("Size of request: ", size, "\n")
-
-          print("Old base seq: ", self.base_seq)
-          print("Old eqv base seq: ", eqv_base_seq, "\n")
-
-          print("Old next seq: ", self.next_seq)
-          print("Old eqv next seq: ", eqv_next_seq, "\n")
-                    
-          print("Old last seq: ", self.last_seq)
-          print("Old eqv last seq: ", eqv_last_seq, "\n")
-
-          print("End of unsent buffer: ", self.last_seq)
-          print("End of eqv unsent buffer: ", eqv_last_seq, "\n")
-
           unsent_bytes = self.buffer[eqv_next_seq:eqv_last_seq]
-          print("Unsent bytes: ", unsent_bytes, "\n")
-
-          self.next_seq = self.last_seq
-          print("New next seq num: ", self.next_seq)
-          print("New eqv next seq num: ", eqv_last_seq, "\n")          
-
-
+          self.next_seq = self.last_seq       
         else:
-          print("2nd case" + "\n")
-
-          print("Buffer: ", self.buffer)
-          print("Size of request: ", size, "\n")
-
-          print("Old base seq: ", self.base_seq)
-          print("Old eqv base seq: ", eqv_base_seq, "\n")
-
-          print("Old next seq: ", self.next_seq)
-          print("Old eqv next seq: ", eqv_next_seq, "\n")
-                    
-          print("Old last seq: ", self.last_seq)
-          print("Old eqv last seq: ", eqv_last_seq, "\n")
-
-          print("End of unsent buffer: ", self.next_seq + size)
-          print("End of eqv unsent buffer: ", eqv_next_seq + size, "\n")
-          
           unsent_bytes = self.buffer[eqv_next_seq:eqv_next_seq+ size]
-
-          print("Unsent bytes: ", unsent_bytes, "\n")
-
           self.next_seq += size
-          print("New next seq num: ", self.next_seq)
-          print("New eqv next seq num: ", eqv_next_seq , "\n")          
-
-      
+  
         return (unsent_bytes, prev_next_seq)
-    
-    
-
+  
 
     ''' 
       Question(s):
@@ -109,41 +56,10 @@ class TCPSendBuffer(object):
         eqv_last_seq = self.last_seq - self.base_seq
 
         if size > len(self.buffer) or (eqv_base_seq + size) > eqv_next_seq:
-          print("1st case\n")
-          print("Buffer: ", self.buffer)
-          print("Size of request: ", size, "\n")
-
-          print("Old base seq: ", self.base_seq)
-          print("Old eqv base seq: ", eqv_base_seq, "\n")
-
-          print("Old next seq: ", self.next_seq)
-          print("Old eqv next seq: ", eqv_next_seq, "\n")
-                    
-
-          print("End of sent&unack'ed buffer: ", self.next_seq)
-          print("End of eqv sent&unack'ed buffer: ", eqv_next_seq, "\n")
           unack_bytes = self.buffer[eqv_base_seq:eqv_next_seq]
-
-          print("Sent&Unack_bytes: ", unack_bytes, "\n")
         else:
-          print("2nd case\n")
-
-          print("Buffer: ", self.buffer)
-          print("Size of request: ", size, "\n")
-
-          print("Old base seq: ", self.base_seq)
-          print("Old eqv base seq: ", eqv_base_seq, "\n")
-
-          print("Old next seq: ", self.next_seq)
-          print("Old eqv next seq: ", eqv_next_seq, "\n")
-                    
-
-          print("End of sent&unack'ed buffer: ", self.next_seq + size)
-          print("End of eqv sent&unack'ed buffer: ", eqv_next_seq + size, "\n")
           unack_bytes = self.buffer[eqv_base_seq:eqv_base_seq + size]
 
-          print("Sent&Unack_bytes: ", unack_bytes, "\n")
-      
         return (unack_bytes, self.base_seq)
     
 
@@ -194,8 +110,96 @@ class TCPReceiveBuffer(object):
         self.buffer = {}
         self.base_seq = seq
 
+    '''
+      Question(s):
+      
+        Q: Would there be a regualar case, as stated below? (i.e passed all early checks)
+        A:
+
+        Q: Would we we return from these early checks? If not, are we to enclose each in else-if logic? Now, if we 
+           do that, would it be necessary to follow up the stitching after just regular case or from any?
+        A: 
+
+
+        Q: Regarding the higher level understand of receive buffer, when is the buffer "ready"?
+           Is it when just the initial "hole" from base has been filled? OR is it when every "hole"
+           is filled? 
+           
+           If either case, do we need update the base_seq num to comply w/ "hole" conundrum
+           AND to satisfy other early checks for next data that gets processed?
+
+           (Ref. to Case 2 (Edge) extra measure comment)
+           (Ref. to )
+        A: 
+
+
+        Q: Wouldn't we need to check Case 3 (Edge) within case two, before we update the buffer at 
+           the base seqno with data's remaining bytes? Essentially checking if data at base exist already,
+           then pick the larger of the two?
+           - This is assuming that we are NOT updating the base_seq, determined from question prior to this.
+        A: 
+
+    
+    '''
     def put(self, data: bytes, sequence: int) -> None:
-        pass
+        
+        # TODO: see if self.buffer is what we are to use
+        data_map = {} # Key: seqno -> int | Value: data -> bytes
+
+        eqv_base_seq = 0
+        eqv_seq = abs(sequence - self.base_seq) # absolute in 
+        data_sz = len(data)
+
+        
+        # Case 1: (EDGE) handle_data sending in old data to put in receive buffer
+        if sequence + data_sz < self.base_seq: # 
+          return
+      
+        # Case 2: (EDGE) handle_data sending in data where some bytes in beginning are old, remaining are new
+        if sequence < self.base_seq and sequence + data_sz >= self.base_seq:
+          # TODO: determine if extra measure needed if we realize that the beginning "hole" starting from base been filled
+          adj_data_base = self.base_seq - sequence 
+          self.buffer[self.base_seq] = data[adj_data_base:data_sz] # Store under base_seq since we trim for remaining bytes over base
+          return 
+        
+        # Case 3: (EDGE) handle_data sends in duplicate sequence number
+        if self.buffer.get(sequence) is not None:
+           # Choose longer segment between existing & incoming
+           existing_seg = self.buffer.get(sequence)
+           self.buffer[sequence] = data if data_sz > len(existing_seg) else existing_seg
+           return
+        
+
+        # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
+        self.buffer[sequence] = data
+
+        
+        buff_items = self.buffer.items() # Retrieve list of sequence<->segment pairs
+        buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
+
+        for i, seg_pair in enumerate(buff_items):
+          curr_seqno, curr_segment = seg_pair
+          curr_sz = len(curr_sz)
+          
+          if i != 0: # Ensure we have a previous segment to check
+            prev_seqno, prev_segment  = buff_items[i - 1]
+            prev_sz = len(prev_segment)
+
+            if prev_seqno + prev_sz >= curr_seqno: # There is at least 1 duplicate byte starting w/ current seqno & beyond
+
+              # Case 1: prev segment engulfs the whole current (i.e all of current segment is duplicated)
+              if prev_seqno + prev_sz == curr_seqno + curr_sz:
+                 # TODO: figure out 1)if this check is needed and 2)how to handle it
+
+                 return
+              
+              # Case 2: Regular duplicated case where NOT all of current segment's bytes are duplicated
+              del self.buffer[curr_seqno] # Remove old sequence<->segment pair a
+              new_seqno = prev_seqno + prev_sz
+              new_eqv_seqno = new_seqno - curr_seqno # Compute updated start sequence
+              new_curr_segment = curr_segment[new_eqv_seqno:curr_sz] # Trim duplicated bytes from current segment
+              self.buffer[new_seqno] = new_curr_segment # Populate updated segment w/ new seqno in buffer!
+
 
     def get(self) -> tuple[bytes, int]:
         pass
