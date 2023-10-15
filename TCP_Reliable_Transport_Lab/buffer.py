@@ -245,6 +245,7 @@ class TCPReceiveBuffer(object):
             # Case 2: (EDGE) Previous segment overlaps current (i.e duplicates), switching required
             if prev_seqno + prev_sz >= curr_seqno: # Same logic as in PUT
               print("Case 2 here", "\n")
+              print("Old buffer: ", self.buffer)
               # TODO: (EDGE) if case 1 check in PUT is needed, it will be needed here as well
 
               del self.buffer[curr_seqno] # Remove old sequence <-> segment pair for current segment
@@ -254,7 +255,7 @@ class TCPReceiveBuffer(object):
               self.buffer[new_seqno] = new_curr_segment # Populate updated segment w/ new seqno in buffer!
 
               print("Updated current segment: ", new_curr_segment)
-              print("Buffer: ", self.buffer)
+              print("Updated buffer: ", self.buffer)
 
               cont_set += new_curr_segment
               print("Updated cont set: ", cont_set, "\n")
