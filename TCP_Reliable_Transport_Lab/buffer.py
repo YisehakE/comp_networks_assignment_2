@@ -271,6 +271,6 @@ class TCPReceiveBuffer(object):
   
         # 3. Delete all segments in contiguous set from buffer
         for item in buff_items: 
-           if item[0] != self.base_seq: del self.buffer[item[0]] 
+           if item[0] < self.base_seq: del self.buffer[item[0]] 
 
         return (cont_set, prev_base_seq)
