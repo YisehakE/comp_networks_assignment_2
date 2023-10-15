@@ -267,7 +267,7 @@ class TCPReceiveBuffer(object):
               cont_set += self.buffer[prev_seqno] # TODO: CHANGE!
               print("Buffer: ", self.buffer)
               print("Updated cont set: ", cont_set, "\n")
-          else: cont_set += buff_items[0]
+          else: cont_set += curr_segment
   
 
         return (cont_set, prev_base_seq)
