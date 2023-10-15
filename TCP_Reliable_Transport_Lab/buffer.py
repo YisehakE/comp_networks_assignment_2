@@ -269,6 +269,8 @@ class TCPReceiveBuffer(object):
               print("Updated cont set: ", cont_set, "\n")
           else: cont_set += curr_segment
   
+        # 3. Delete all segments in contiguous set from buffer
+        for item in buff_items: 
+           if item[0] != self.base_seq: del self.buffer[item[0]] 
 
-        for item in buff_items and item[0] != self.base_seq: del self.buffer[item[0]] # Delete all segments in continguos set from buffer
         return (cont_set, prev_base_seq)
