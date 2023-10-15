@@ -221,6 +221,8 @@ class TCPReceiveBuffer(object):
         cont_set = b''
         prev_base_seq = self.base_seq
 
+        if self.buffer.get(prev_base_seq) is None: return (cont_set, prev_base_seq) # (EDGE) early check for start of base_seq
+
         # 1. Retrieve buffer items & compile into sorted list 
         buff_items = [item for item in self.buffer.items()] # Retrieve list of sequence<->segment pairs
         buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
