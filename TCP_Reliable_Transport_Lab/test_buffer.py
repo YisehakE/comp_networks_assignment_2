@@ -130,11 +130,20 @@ class TestBuffer(unittest.TestCase):
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
-        # # try to get ready data; none is ready because initial bytes are
-        # # missing
-        # data, start = buf.get()
-        # self.assertEqual(data, b'')
-        # self.assertEqual(buf.base_seq, 2021)
+        print("*******************************************************************************************************************")
+
+        print("---------------------------------------------------------------")
+        print("                        1st set of 'GET'\n|Ex. from 'GET' prompt| No ready segments")
+        print("---------------------------------------------------------------")
+        # try to get ready data; none is ready because initial bytes are
+        # missing
+        data, start = buf.get()
+        self.assertEqual(data, b'')
+        self.assertEqual(buf.base_seq, 2021)
+        print("---------------------------------------------------------------")
+        print("                        1st set 'GET' passed!") 
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
         # # add missing data
         # buf.put(b'abc', 2021)
