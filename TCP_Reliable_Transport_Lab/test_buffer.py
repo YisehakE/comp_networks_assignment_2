@@ -199,12 +199,18 @@ class TestBuffer(unittest.TestCase):
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
-
-        # # get ready data
-        # data, start = buf.get()
-        # self.assertEqual(data, b'jklmno')
-        # self.assertEqual(start, 2030)
-        # self.assertEqual(buf.base_seq, 2036)
+        print("---------------------------------------------------------------")
+        print("                        5th set of 'GET' \n Retrieve ready set after multiple additions/fills/etc")
+        print("---------------------------------------------------------------")
+        # get ready data
+        data, start = buf.get()
+        self.assertEqual(data, b'jklmno')
+        self.assertEqual(start, 2030)
+        self.assertEqual(buf.base_seq, 2036)
+        print("---------------------------------------------------------------")
+        print("                        5th set 'GET' passed!") 
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
 if __name__ == '__main__':
     unittest.main()
