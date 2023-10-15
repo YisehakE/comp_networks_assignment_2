@@ -158,13 +158,20 @@ class TestBuffer(unittest.TestCase):
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
-        # # get ready data
-        # data, start = buf.get()
-        # self.assertEqual(data, b'abcdefghi')
-        # self.assertEqual(start, 2021)
-        # self.assertEqual(buf.base_seq, 2030)
-        # self.assertEqual(buf.buffer,
-        #         {2033: b'mno'})
+        print("---------------------------------------------------------------")
+        print("                        3rd set of 'GET'\n|Ex. from 'GET' prompt| Retrieve ready set after initial fill")
+        print("---------------------------------------------------------------")
+        # get ready data
+        data, start = buf.get()
+        self.assertEqual(data, b'abcdefghi')
+        self.assertEqual(start, 2021)
+        self.assertEqual(buf.base_seq, 2030)
+        self.assertEqual(buf.buffer,
+                {2033: b'mno'})
+        print("---------------------------------------------------------------")
+        print("                        3rd set 'GET' passed!") 
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
         # # make sure buffer does not accept data with seq number lower
         # # than base seq
