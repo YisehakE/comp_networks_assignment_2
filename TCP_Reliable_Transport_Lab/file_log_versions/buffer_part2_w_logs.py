@@ -191,15 +191,17 @@ class TCPReceiveBuffer(object):
         self.buffer = {}
         self.base_seq = seq
 
-    '''
+    ''''
       Question(s):
       
         Q: Would there be a regualar case, as stated below? (i.e passed all early checks)
-        A:
+        A: [FROM OWN] Yes, or else there would the functionality would work for stitching after otherwise.
+        A: [FROM TA/PROF/PEER]
 
         Q: Would we we return from these early checks? If not, are we to enclose each in else-if logic? Now, if we 
            do that, would it be necessary to follow up the stitching after just regular case or from any?
-        A: 
+        A: [FROM OWN TESTING] No, do not return, instead wrap in else-if logic with default as w/out early checks
+        A: [FROM TA/PROF/PEER]  
 
 
         Q: Regarding the higher level understand of receive buffer, when is the buffer "ready"?
@@ -210,14 +212,23 @@ class TCPReceiveBuffer(object):
            AND to satisfy other early checks for next data that gets processed?
 
            (Ref. to Case 2 (Edge) extra measure comment)
-           (Ref. to )
         A: 
+
+            Q: In addition to previous question, if we don't need to update the base_seq, is that b/c
+              that responsibility is solely for the GET function below? Why is it split like this
+              and wouldn't this allow some unintended errors
+            A: 
 
 
         Q: Wouldn't we need to check Case 3 (Edge) within case two, before we update the buffer at 
            the base seqno with data's remaining bytes? Essentially checking if data at base exist already,
            then pick the larger of the two?
            - This is assuming that we are NOT updating the base_seq, determined from question prior to this.
+        A: 
+
+
+        Q: Would case 1 in the stitching duplicates check be necessary? What does that even mean
+           in terms of processing?
         A: 
 
     
@@ -289,33 +300,73 @@ class TCPReceiveBuffer(object):
             print("Current seqno, segment, sz: ", curr_seqno, curr_segment, curr_sz)
 
 
+    '''
+      Question(s):
+        Q:
+        A: 
+    
+    '''
     def get(self) -> tuple[bytes, int]:
-        # TODO: flesh out according to prompt
+      # 0. Initialize return values
+      cont_set = b''
+      prev_base_seq = self.base_seq
 
-        # 0. Initialize return values
-        cont_set = b''
-        prev_base_seq = self.base_seq
+      # Early check: from the base_seq there's already a hole
+      if self.buffer.get(prev_base_seq) is None: return (cont_set, prev_base_seq) 
 
-        # 1. Retrieve buffer items & compile into sorted list 
-        buff_items = [(key, val) for key, val in self.buffer.items()] # Retrieve list of sequence<->segment pairs
-        buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
+      # 1. Retrieve buffer items & compile into sorted list 
+      buff_items = [item for item in self.buffer.items()] # Retrieve list of sequence<->segment pairs
+      buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
 
-        # 2. 
-        for i, seg_pair in enumerate(buff_items):
-           
-           if i != 0: # Ensure we have a previous segment to check
-              
-              # Case 1: There is a detected gap, return cont_set as is
-              if ():
-                 pass
-              # Case 2: Previous segment overlaps current (i.e duplicates), switching required
-              if (): # TODO: retrieve logic from PUT
-                pass
+      # 2. Stitch up any duplicates throughout buffer + update continuous set until gap
+      for i, seg_pair in enumerate(buff_items):
+        curr_seqno, curr_segment = seg_pair
+        curr_sz = len(curr_segment)
+        if i != 0: # Ensure we have a previous segment to check
+          prev_seqno, prev_segment  = buff_items[i - 1]
+          prev_sz = len(prev_segment)
 
-              # Case 3: No gap and no duplicates, previous and current segment are perfectly continguos
-              
-              pass
-           pass
+          # Case 1: (EDGE) There is a detected gap, return cont_set as is
+          if prev_seqno + prev_sz < curr_seqno - 1: # If it was = curr_seqno - 1, then prev & curr segments would have been perfectly continuous
+              print("Case 1 here", "\n")
+              # self.base_seq = prev_seqno + prev_sz # Update base seqno to end-of-previous segment, i.e start of next "hole"
+              print("New base_seq: ", self.base_seq)
+              print("Buffer: ", self.buffer, "\n")
+              break
+          # Case 2: (EDGE) Previous segment overlaps current (i.e duplicates), switching required
+          if prev_seqno + prev_sz >= curr_seqno: # Same logic as in PUT
+            print("Case 2 here", "\n")
+            print("Old buffer: ", self.buffer)
 
-        return (cont_set, prev_base_seq)
-        pass
+            # TODO: (EDGE) if case 1 check in PUT is needed, it will be needed here as well
+
+            del self.buffer[curr_seqno] # Remove old sequence <-> segment pair for current segment
+            new_seqno = prev_seqno + prev_sz # Compute upddate start seq for buffer
+            new_eqv_seqno = new_seqno - curr_seqno # Compute updated start seq for array, eqvivalent to actual new sequence above
+            new_curr_segment = curr_segment[new_eqv_seqno:curr_sz] # Trim duplicated bytes from current segment
+            self.buffer[new_seqno] = new_curr_segment # Populate updated segment w/ new seqno in buffer!
+
+            print("Updated current segment: ", new_curr_segment)
+            print("Updated buffer: ", self.buffer)
+            
+            cont_set += new_curr_segment
+            self.base_seq = curr_seqno + curr_sz
+            print("Updated cont set: ", cont_set, "\n")
+            print("New base_seq: ", self.base_seq)
+            
+          # Case 3: (REGULAR) Current segment has no gap & no duplicates from/with previous segment... perfectly continuous!
+          elif prev_seqno + prev_sz == curr_seqno - 1:
+            print("Case 3 here", "\n")
+            cont_set += self.buffer[prev_seqno] # TODO: CHANGE!
+            print("Buffer: ", self.buffer)
+            print("Updated cont set: ", cont_set, "\n")
+        else: 
+            cont_set += curr_segment
+            self.base_seq = curr_seqno + curr_sz
+            print("New base_seq: ", self.base_seq)
+
+        # 3. Delete all segments in contiguous set from buffer
+      for item in buff_items: 
+        if item[0] < self.base_seq: del self.buffer[item[0]] 
+
+      return (cont_set, prev_base_seq)
