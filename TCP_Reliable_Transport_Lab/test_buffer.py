@@ -133,7 +133,7 @@ class TestBuffer(unittest.TestCase):
         print("*******************************************************************************************************************")
 
         print("---------------------------------------------------------------")
-        print("                        1st set of 'GET'\n|Ex. from 'GET' prompt| No ready segments")
+        print("                        1st set of 'GET'\n|Ex. from 'GET' prompt| No ready segments from the jump")
         print("---------------------------------------------------------------")
         # try to get ready data; none is ready because initial bytes are
         # missing
@@ -145,11 +145,18 @@ class TestBuffer(unittest.TestCase):
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
-        # # add missing data
-        # buf.put(b'abc', 2021)
-        # self.assertEqual(buf.buffer,
-        #         {2021: b'abc', 2024: b'def', 2027: b'ghi', 2033: b'mno'})
-        # self.assertEqual(buf.base_seq, 2021)
+        print("---------------------------------------------------------------")
+        print("                        2nd set of 'GET'\n|Ex. from 'GET' prompt| Fill in inital hole")
+        print("---------------------------------------------------------------")
+        # add missing data
+        buf.put(b'abc', 2021)
+        self.assertEqual(buf.buffer,
+                {2021: b'abc', 2024: b'def', 2027: b'ghi', 2033: b'mno'})
+        self.assertEqual(buf.base_seq, 2021)
+        print("---------------------------------------------------------------")
+        print("                        2nd set 'GET' passed!") 
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
         # # get ready data
         # data, start = buf.get()
