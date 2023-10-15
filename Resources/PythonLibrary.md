@@ -18,6 +18,8 @@
 - https://note.nkmk.me/en/python-dict-keys-values-items/#:~:text=source%3A%20dict_keys_values_items.py-,Iterate%20through%20dictionary%20key%2Dvalue%20pairs%3A%20items(),use%20the%20items()%20method.&text=You%20can%20also%20receive%20the,of%20(key%2C%20value)%20.
 
 
+### Converting dict_items from .items() into list of pairs
+- https://stackoverflow.com/questions/62244179/how-to-convert-dict-items-object-to-list
 
 
 ## Arrays

@@ -154,7 +154,7 @@ class TestBuffer(unittest.TestCase):
                 {2021: b'abc', 2024: b'def', 2027: b'ghi', 2033: b'mno'})
         self.assertEqual(buf.base_seq, 2021)
         print("---------------------------------------------------------------")
-        print("                        2nd set 'GET' passed!") 
+        print("                        2nd/4th set 'GET'/'PUT' passed!") 
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
@@ -174,7 +174,7 @@ class TestBuffer(unittest.TestCase):
         print("---------------------------------------------------------------")
 
         print("---------------------------------------------------------------")
-        print("                        4th set of 'GET' | 5th set of 'PUT'\n|Ex. from 'GET' prompt| Handling old data case")
+        print("                        4th set of 'GET' | 5th set of 'PUT'\n| Handling old data case")
         print("---------------------------------------------------------------")
         # make sure buffer does not accept data with seq number lower
         # than base seq
@@ -183,14 +183,22 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buf.buffer,
                 {2033: b'mno'})
         print("---------------------------------------------------------------")
-        print("                        4th set 'GET' passed!") 
+        print("                        4th/5th set 'GET'/'PUT' passed!") 
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
-        # # add missing data
-        # buf.put(b'jkl', 2030)
-        # self.assertEqual(buf.buffer,
-        #         {2030: b'jkl', 2033: b'mno'})
+        print("---------------------------------------------------------------")
+        print("                        4th set of 'GET' | 6th set of 'PUT'\n Regular addition of new data")
+        print("---------------------------------------------------------------")
+        # add missing data
+        buf.put(b'jkl', 2030)
+        self.assertEqual(buf.buffer,
+                {2030: b'jkl', 2033: b'mno'})
+        print("---------------------------------------------------------------")
+        print("                        4th/6th set 'GET/'PUT' passed!") 
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
+
 
         # # get ready data
         # data, start = buf.get()
