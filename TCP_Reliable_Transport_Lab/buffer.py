@@ -237,11 +237,14 @@ class TCPReceiveBuffer(object):
 
             # Case 1: (EDGE) There is a detected gap, return cont_set as is
             if prev_seqno + prev_sz < curr_seqno - 1: # If it was = curr_seqno - 1, then prev & curr segments would have been perfectly continuous
+                print("Case 1 here", "\n")
                 self.base_seq = prev_seqno + prev_sz # Update base seqno to end-of-previous segment, i.e start of next "hole"
+                print("New base_seq: ", self.base_seq)
+                print("Buffer: ", self.buffer, "\n")
                 break
             # Case 2: (EDGE) Previous segment overlaps current (i.e duplicates), switching required
             if prev_seqno + prev_sz >= curr_seqno: # Same logic as in PUT
-
+              print("Case 2 here", "\n")
               # TODO: (EDGE) if case 1 check in PUT is needed, it will be needed here as well
 
               del self.buffer[curr_seqno] # Remove old sequence <-> segment pair for current segment
@@ -250,10 +253,17 @@ class TCPReceiveBuffer(object):
               new_curr_segment = curr_segment[new_eqv_seqno:curr_sz] # Trim duplicated bytes from current segment
               self.buffer[new_seqno] = new_curr_segment # Populate updated segment w/ new seqno in buffer!
 
+              print("Updated current segment: ", new_curr_segment)
+              print("Buffer: ", self.buffer)
+
               cont_set += new_curr_segment
+              print("Updated cont set: ", cont_set, "\n")
             # Case 3: (REGULAR) Current segment has no gap & no duplicates from/with previous segment... perfectly continuous!
             elif prev_seqno + prev_sz == curr_seqno - 1:
-               cont_set += self.buffer[prev_seqno]
+              print("Case 3 here", "\n")
+              cont_set += self.buffer[prev_seqno] # TODO: CHANGE!
+              print("Buffer: ", self.buffer)
+              print("Updated cont set: ", cont_set, "\n")
 
   
         return (cont_set, prev_base_seq)
