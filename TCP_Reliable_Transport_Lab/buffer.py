@@ -270,4 +270,5 @@ class TCPReceiveBuffer(object):
           else: cont_set += curr_segment
   
 
+        for item in buff_items and item[0] != self.base_seq: del self.buffer[item[0]] # Delete all segments in continguos set from buffer
         return (cont_set, prev_base_seq)
