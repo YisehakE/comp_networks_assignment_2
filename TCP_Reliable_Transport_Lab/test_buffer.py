@@ -146,7 +146,7 @@ class TestBuffer(unittest.TestCase):
         print("---------------------------------------------------------------")
 
         print("---------------------------------------------------------------")
-        print("                        2nd set of 'GET'\n|Ex. from 'GET' prompt| Fill in inital hole")
+        print("                        2nd set of 'GET' | 4th set of 'PUT'\n|Ex. from 'GET' prompt| Fill in inital hole")
         print("---------------------------------------------------------------")
         # add missing data
         buf.put(b'abc', 2021)
@@ -173,12 +173,19 @@ class TestBuffer(unittest.TestCase):
         print("---------------------------------------------------------------")
         print("---------------------------------------------------------------")
 
-        # # make sure buffer does not accept data with seq number lower
-        # # than base seq
-        # buf.put(b'abc', 2021)
-        # self.assertEqual(buf.base_seq, 2030)
-        # self.assertEqual(buf.buffer,
-        #         {2033: b'mno'})
+        print("---------------------------------------------------------------")
+        print("                        4th set of 'GET' | 5th set of 'PUT'\n|Ex. from 'GET' prompt| Handling old data case")
+        print("---------------------------------------------------------------")
+        # make sure buffer does not accept data with seq number lower
+        # than base seq
+        buf.put(b'abc', 2021)
+        self.assertEqual(buf.base_seq, 2030)
+        self.assertEqual(buf.buffer,
+                {2033: b'mno'})
+        print("---------------------------------------------------------------")
+        print("                        4th set 'GET' passed!") 
+        print("---------------------------------------------------------------")
+        print("---------------------------------------------------------------")
 
         # # add missing data
         # buf.put(b'jkl', 2030)
