@@ -157,26 +157,30 @@ class TCPReceiveBuffer(object):
         eqv_seq = abs(sequence - self.base_seq) # absolute in 
         data_sz = len(data)
 
-        
+        # 1. Handle functionality for PUT, edge cases included
+
         # Case 1: (EDGE) handle_data sending in old data to put in receive buffer
         if sequence + data_sz < self.base_seq: # 
           return
       
         if sequence < self.base_seq and sequence + data_sz >= self.base_seq:
-          # Case 2: (EDGE) handle_data sending in data where some bytes in beginning are old, remaining are new
+        # Case 2: (EDGE) handle_data sending in data where some bytes in beginning are old, remaining are new
 
           # TODO: determine if extra measure needed if we realize that the beginning "hole" starting from base been filled
           adj_data_base = self.base_seq - sequence 
           self.buffer[self.base_seq] = data[adj_data_base:data_sz] # Store under base_seq since we trim for remaining bytes over base
         elif self.buffer.get(sequence) is not None:
-          # Case 3: (EDGE) handle_data sends in sequence number that already exists in buffer
+        # Case 3: (EDGE) handle_data sends in sequence number that already exists in buffer
 
           # Choose longer segment between existing & incoming
           existing_seg = self.buffer.get(sequence)
           self.buffer[sequence] = data if data_sz > len(existing_seg) else existing_seg
         else: 
-          # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
+        # Case 4: (REGULAR) handle_data sends in a new stream of data w/ non-conflicting seqno 
           self.buffer[sequence] = data
+
+
+        # 2. Stitch up any duplicates throughout buffer
 
         buff_items = [(key, val) for key, val in self.buffer.items()] # Retrieve list of sequence<->segment pairs
         buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
@@ -190,19 +194,26 @@ class TCPReceiveBuffer(object):
             prev_sz = len(prev_segment)
 
             if prev_seqno + prev_sz >= curr_seqno: # There is at least 1 duplicate byte starting w/ current seqno & beyond
-              # Case 1: prev segment engulfs the whole current (i.e all of current segment is duplicated)
+              # Case 1: (EDGE) prev segment engulfs the whole current (i.e all of current segment is duplicated)
               if prev_seqno + prev_sz == curr_seqno + curr_sz:
                  # TODO: figure out 1)if this check is needed and 2)how to handle it
 
                  return
               
-              # Case 2: Regular duplicated case where NOT all of current segment's bytes are duplicated
+              # Case 2: (REGULAR) duplicated case where NOT all of current segment's bytes are duplicated
               del self.buffer[curr_seqno] # Remove old sequence<->segment pair a
-              new_seqno = prev_seqno + prev_sz
-              new_eqv_seqno = new_seqno - curr_seqno # Compute updated start sequence
+              new_seqno = prev_seqno + prev_sz # Compute upddate start seq for buffer
+              new_eqv_seqno = new_seqno - curr_seqno # Compute updated start seq for array, eqvivalent to actual new sequence above
               new_curr_segment = curr_segment[new_eqv_seqno:curr_sz] # Trim duplicated bytes from current segment
               self.buffer[new_seqno] = new_curr_segment # Populate updated segment w/ new seqno in buffer!
 
+
+    '''
+      Question(s):
+        Q:
+        A: 
+    
+    '''
     def get(self) -> tuple[bytes, int]:
         # TODO: flesh out according to prompt
 
@@ -211,25 +222,38 @@ class TCPReceiveBuffer(object):
         prev_base_seq = self.base_seq
 
         # 1. Retrieve buffer items & compile into sorted list 
-        buff_items = [(key, val) for key, val in self.buffer.items()] # Retrieve list of sequence<->segment pairs
+        buff_items = [item for item in self.buffer.items()] # Retrieve list of sequence<->segment pairs
         buff_items.sort(key=lambda pair: pair[0]) # Sort by sequence numbers
 
-        # 2. 
+        # TODO: see if dict_items from .items() carries view object property even to self.buffer after compiling into list
+
+        # 2. Stitch up any duplicates throughout buffer + update continuous set until gap
         for i, seg_pair in enumerate(buff_items):
-           
-           if i != 0: # Ensure we have a previous segment to check
-              
-              # Case 1: There is a detected gap, return cont_set as is
-              if ():
-                 pass
-              # Case 2: Previous segment overlaps current (i.e duplicates), switching required
-              if (): # TODO: retrieve logic from PUT
-                pass
+          curr_seqno, curr_segment = seg_pair
+          curr_sz = len(curr_segment)
+          if i != 0: # Ensure we have a previous segment to check
+            prev_seqno, prev_segment  = buff_items[i - 1]
+            prev_sz = len(prev_segment)
 
-              # Case 3: No gap and no duplicates, previous and current segment are perfectly continguos
-              
-              pass
-           pass
+            # Case 1: (EDGE) There is a detected gap, return cont_set as is
+            if prev_seqno + prev_sz < curr_seqno - 1: # If it was = curr_seqno - 1, then prev & curr segments would have been perfectly continuous
+                self.base_seq = prev_seqno + prev_sz # Update base seqno to end-of-previous segment, i.e start of next "hole"
+                break
+            # Case 2: (EDGE) Previous segment overlaps current (i.e duplicates), switching required
+            if prev_seqno + prev_sz >= curr_seqno: # Same logic as in PUT
 
+              # TODO: (EDGE) if case 1 check in PUT is needed, it will be needed here as well
+
+              del self.buffer[curr_seqno] # Remove old sequence <-> segment pair for current segment
+              new_seqno = prev_seqno + prev_sz # Compute upddate start seq for buffer
+              new_eqv_seqno = new_seqno - curr_seqno # Compute updated start seq for array, eqvivalent to actual new sequence above
+              new_curr_segment = curr_segment[new_eqv_seqno:curr_sz] # Trim duplicated bytes from current segment
+              self.buffer[new_seqno] = new_curr_segment # Populate updated segment w/ new seqno in buffer!
+
+              cont_set += new_curr_segment
+            # Case 3: (REGULAR) Current segment has no gap & no duplicates from/with previous segment... perfectly continuous!
+            elif prev_seqno + prev_sz == curr_seqno - 1:
+               cont_set += self.buffer[prev_seqno]
+
+  
         return (cont_set, prev_base_seq)
-        pass
